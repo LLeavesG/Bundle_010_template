@@ -1,0 +1,211 @@
+// Parcelable类型值的个数 偏移(需考虑BundleLength 和 魔术字共8字节) 以及 数据长度(按顺序)
+// 如果需要VAL_PARCELABLEARRAY类型数据处理 同理按序添加
+
+local UINT ParcelableValueNum = 0;
+if (ParcelableValueNum > 0){
+
+   // local UINT ParcelableDataOffset[ParcelableValueNum] = {0x48}; 
+    // local UINT ParcelableDataSize[ParcelableValueNum] = {20};
+
+    local UINT ParcelableDataOffset[ParcelableValueNum] = {0x48, 0xc0}; 
+    local UINT ParcelableDataSize[ParcelableValueNum] = {16, 0x120};
+
+    local UINT ParcelablePosCount = 0;
+}
+
+int getUshortLen(int len){
+    return (len + 1) + (len + 1)%2;
+}
+
+
+typedef struct _Header{
+    UINT length;
+    INT magicNum;
+    INT mapSize;
+}Header;
+
+typedef struct _String16{
+	UINT stringLen;
+	USHORT string16[getUshortLen(stringLen)];
+}String16;
+
+typedef struct _Key{
+    String16 key;
+}Key;
+
+typedef enum _Typecode{
+	VAL_NULL = -1,
+	VAL_STRING = 0,
+	VAL_INTEGER = 1,
+	VAL_MAP = 2,
+	VAL_BUNDLE = 3,
+	VAL_PARCELABLE = 4,
+	VAL_SHORT = 5,
+	VAL_LONG = 6,
+	VAL_FLOAT = 7,
+	VAL_DOUBLE = 8,
+	VAL_BOOLEAN = 9,
+	VAL_CHARSEQUENCE = 10,
+	VAL_LIST  = 11,
+	VAL_SPARSEARRAY = 12,
+	VAL_BYTEARRAY = 13,
+	VAL_STRINGARRAY = 14,
+	VAL_IBINDER = 15,
+	VAL_PARCELABLEARRAY = 16,
+	VAL_OBJECTARRAY = 17,
+	VAL_INTARRAY = 18,
+	VAL_LONGARRAY = 19,
+	VAL_BYTE = 20,
+	VAL_SERIALIZABLE = 21,
+	VAL_SPARSEBOOLEANARRAY = 22,
+	VAL_BOOLEANARRAY = 23,
+	VAL_CHARSEQUENCEARRAY = 24,
+	VAL_PERSISTABLEBUNDLE = 25,
+	VAL_SIZE = 26,
+	VAL_SIZEF = 27,
+	VAL_DOUBLEARRAY = 28
+}Typecode;
+
+
+struct KeyValuePair;
+struct Value;
+
+typedef struct _Value{
+    Typecode typecode;
+    if(typecode == VAL_NULL){
+        // do nothing
+    }
+    else if(typecode == VAL_STRING){
+        String16 str16;
+    }
+    else if(typecode == VAL_INTEGER){
+        INT data;
+    }
+    else if(typecode == VAL_MAP){
+		
+    }
+    else if(typecode == VAL_BUNDLE){
+		UINT bundleLen;
+		if(bundleLen != 0){
+			UINT magicNum;
+			local int startPos = FTell();
+			UINT mapSize;
+			while(FTell() - startPos < bundleLen){
+				KeyValuePair __kv;
+			}
+		}
+
+    }
+    else if(typecode == VAL_PARCELABLE){
+        UINT classNameLen;
+        USHORT className[getUshortLen(classNameLen)];
+        if( FTell() == ParcelableDataOffset[ParcelablePosCount] ){
+            BYTE dataBuffer[ParcelableDataSize[ParcelablePosCount]];
+            ParcelablePosCount += 1;
+        }
+    }
+    else if(typecode == VAL_SHORT){
+        SHORT data;
+        FSkip(0x2);
+    }
+    else if(typecode == VAL_LONG){
+        INT64 data;
+    }
+    else if(typecode == VAL_FLOAT){
+        FLOAT data;
+    }
+    else if(typecode == VAL_DOUBLE){
+        DOUBLE data;
+    }
+    else if(typecode == VAL_BOOLEAN){
+        INT bool;
+    }
+    else if(typecode == VAL_CHARSEQUENCE){
+		// TODO
+    }
+    else if(typecode == VAL_LIST){
+		INT ListSize;
+		Value value[ListSize] <optimize=false>;
+    }
+    else if(typecode == VAL_SPARSEARRAY){
+
+    }
+    else if(typecode == VAL_BYTEARRAY){
+        INT byteArrayLen;
+        BYTE byteArray[(byteArrayLen + 3) & ~3 ] ;
+    }
+    else if(typecode == VAL_STRINGARRAY){
+		INT arraySize;
+		String16 str16[arraySize] <optimize=false>;
+    }
+    else if(typecode == VAL_IBINDER){
+		// cannot marshall a Parcel that contained Binder objects
+    }
+    else if(typecode == VAL_PARCELABLEARRAY){
+    	// experiment
+		INT parcelableArraySize;
+		Value value[parcelableArraySize] <optimize=false>;
+    }
+    else if(typecode == VAL_OBJECTARRAY){
+		// TODO
+    }
+    else if(typecode == VAL_INTARRAY){
+		INT intArrayLen;
+		INT intArray[intArrayLen];
+    }
+    else if(typecode == VAL_LONGARRAY){
+		INT longArrayLen;
+		INT64 longArray[longArrayLen];
+    }
+    else if(typecode == VAL_BYTE){
+		BYTE data;
+		FSkip(0x3);
+    }
+    else if(typecode == VAL_SERIALIZABLE ){
+		// TODO:Add VAL_SERIALIZABLE handle
+    }
+    else if(typecode == VAL_SPARSEBOOLEANARRAY){
+		// TODO
+    }
+    else if(typecode == VAL_BOOLEANARRAY){
+		INT boolArrayLen;
+		INT boolArray[boolArrayLen];
+    }
+    else if(typecode == VAL_CHARSEQUENCEARRAY){
+		// TODO
+    }
+    else if(typecode == VAL_PERSISTABLEBUNDLE){
+		// TODO
+    }
+    else if(typecode == VAL_SIZE){
+		INT width;
+		INT height;
+    }
+    else if(typecode == VAL_SIZEF){
+		FLOAT width;
+		FLOAT height;
+    }
+    else if(typecode == VAL_DOUBLEARRAY){
+		INT doubleArrayLen;
+		DOUBLE doubleArray[doubleArrayLen];
+    }
+    else{
+		// Unmarshalling unknown type code 
+    }
+    
+}Value;
+
+typedef struct _KeyValuePair{
+    Key key;
+    Value value;
+    
+}KeyValuePair;
+
+LittleEndian();
+ 
+Header BundleHead;
+
+while(!FEof()){
+    KeyValuePair _kv;
+}
+
